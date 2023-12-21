@@ -30,14 +30,23 @@ class YandexDisk(DiskAbstract):
     URL = 'https://cloud-api.yandex.net/v1/disk/resources/'
 
     def load(self, path):
-        pass
+        response_href = self.session.get(self.URL + f'upload?path={self.folder_path}/2.txt', headers=self.headers)
+        href = response_href.json()['href']
+        with open(path, 'rb') as file:
+            data = file.read()
+            response = self.session.put(url=href, data=data, headers=self.headers)
+            print(response)
 
     def reload(self, path):
-        pass
+        self.delete(path)
+        self.load(path)
 
     def delete(self, filename):
-        pass
+        response = self.session.delete(self.URL + f'?path={self.folder_path}/2.txt', headers=self.headers)
+        print(response)
 
     def get_info(self):
-        response = self.session.get(self.URL + f'files?path=disk:/files_synchronizer/', headers=self.headers)
-        print(response.json())
+        response = self.session.get(self.URL + 'files', headers=self.headers)
+        for item in response.json()['items']:
+            if self.folder_path in item['path']:
+                print(item['name'])
