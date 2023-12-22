@@ -41,15 +41,18 @@ class YandexDisk(DiskAbstract):
             self.URL + f'upload?path={self.folder_path}/{path.split("/")[-1]}',
             headers=self.headers,
         )
-        href = response_href.json()['href']
-        with open(path, 'rb') as file:
-            data: bytes = file.read()
-            response = self.session.put(
-                url=href,
-                data=data,
-                headers=self.headers,
-            )
-            print(response)
+        try:
+            href = response_href.json()['href']
+            with open(path, 'rb') as file:
+                data: bytes = file.read()
+                response = self.session.put(
+                    url=href,
+                    data=data,
+                    headers=self.headers,
+                )
+                print(response)
+        except KeyError:
+            print('Файл уже существует')
 
     def reload(self, path: str) -> None:
         self.delete(path.split("/")[-1])
