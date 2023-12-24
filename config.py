@@ -1,5 +1,4 @@
 import os
-import configparser
 
 from dotenv import load_dotenv, find_dotenv
 
@@ -8,13 +7,11 @@ if not find_dotenv():
 else:
     load_dotenv()
 
-config: configparser.ConfigParser = configparser.ConfigParser()
-config.read('config.ini')
 
-YANDEX_DIR: str = config['settings']['path_folder_disk']
-LOCAL_DIR: str = config['settings']['path_local_folder']
-TIME_WATCH: str = config['settings']['time_watch']
-LOG_PATH: str = config['settings']['log_file_path']
+YANDEX_DIR: str = os.getenv("YANDEX_DIR")
+LOCAL_DIR: str = os.getenv("LOCAL_DIR")
+TIME_WATCH: str = os.getenv("TIME_WATCH")
+LOG_PATH: str = os.getenv("LOG_PATH")
 TOKEN: str = os.getenv("TOKEN")
 
 if not TOKEN:

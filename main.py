@@ -20,7 +20,7 @@ def get_local_files(local_dir: str) -> dict:
     try:
         for file_name in listdir(local_dir):
             if file_name not in file_storage.keys():
-                file_storage[file_name] = path.getmtime(local_dir + file_name)
+                file_storage[file_name] = path.getmtime(local_dir + '/' + file_name)
 
         return file_storage
     except FileNotFoundError:
@@ -37,7 +37,7 @@ def upload_files(local_dir: str, files: set, ydisk: YandexDisk) -> None:
     """
     for file in files:
         try:
-            ydisk.load(f'{local_dir}{file}')
+            ydisk.load(f'{local_dir}/{file}')
             logger.info(f"Файл {file} успешно записан")
         except ConnectionError:
             logger.error(f"Файл {file} не записан. Ошибка соединения")
@@ -54,7 +54,7 @@ def update_files(file_storage: dict, updated_storage: dict, ydisk: YandexDisk) -
     for file in file_storage:
         if file_storage[file] < updated_storage[file]:
             try:
-                ydisk.reload(f'{LOCAL_DIR}{file}')
+                ydisk.reload(f'{LOCAL_DIR}/{file}')
                 logger.info(f'Файл {file} успешно перезаписан')
             except ConnectionError:
                 logger.error(f"Файл {file} не перезаписан. Ошибка соединения")
@@ -70,9 +70,9 @@ def add_new_files(local_dir: str, file_storage: dict, new_files: set, ydisk: Yan
     :return: обновленный словарь с файлами локальной папки
     """
     for file in new_files:
-        file_storage[file] = path.getmtime(local_dir + file)
+        file_storage[file] = path.getmtime(local_dir + '/' + file)
         try:
-            ydisk.load(f'{local_dir}{file}')
+            ydisk.load(f'{local_dir}/{file}')
             logger.info(f"Файл {file} успешно записан")
         except ConnectionError:
             logger.error(f"Файл {file} не записан. Ошибка соединения")
