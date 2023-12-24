@@ -8,13 +8,13 @@ if not find_dotenv():
 else:
     load_dotenv()
 
-config = configparser.ConfigParser()
+config: configparser.ConfigParser = configparser.ConfigParser()
 config.read('config.ini')
 
-YANDEX_DIR = config['settings']['path_folder_disk']
-LOCAL_DIR = config['settings']['path_local_folder']
-TIME_WATCH = config['settings']['time_watch']
-LOG_PATH = config['settings']['log_file_path']
+YANDEX_DIR: str = config['settings']['path_folder_disk']
+LOCAL_DIR: str = config['settings']['path_local_folder']
+TIME_WATCH: str = config['settings']['time_watch']
+LOG_PATH: str = config['settings']['log_file_path']
 TOKEN: str = os.getenv("TOKEN")
 
 if not TOKEN:

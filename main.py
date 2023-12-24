@@ -30,7 +30,6 @@ def get_local_files(local_dir: str) -> dict:
 
 def upload_files(local_dir: str, files: set, ydisk: YandexDisk) -> None:
     """
-
     :param local_dir: локальная папка
     :param files: файлы для загрузки на Yandex Disk
     :param ydisk: экземпляр класса для работы с Яндекс Диском
@@ -120,7 +119,7 @@ def main() -> None:
 
 if __name__ == '__main__':
     logging.basicConfig(
-        filename=f'{LOG_PATH}logs.log',
+        filename=f'{LOG_PATH}',
         level=logging.INFO,
         format="%(name)s %(asctime)s %(levelname)s %(message)s",
     )

@@ -6,7 +6,7 @@ from config import LOG_PATH
 
 logger: logging.Logger = logging.getLogger(__name__)
 logging.basicConfig(
-        filename=f'{LOG_PATH}logs.log',
+        filename=f'{LOG_PATH}',
         level=logging.INFO,
         format="%(name)s %(asctime)s %(levelname)s %(message)s",
     )
@@ -14,9 +14,9 @@ logging.basicConfig(
 
 class DiskAbstract(ABC):
     def __init__(self, token, folder_path):
-        self.token = token
-        self.folder_path = folder_path
-        self.session = Session()
+        self.token: str = token
+        self.folder_path: str = folder_path
+        self.session: Session = Session()
 
     @abstractmethod
     def load(self, path):
@@ -39,7 +39,7 @@ class YandexDisk(DiskAbstract):
     """
     Класс с методами для работы с YandexDisk
     """
-    URL = 'https://cloud-api.yandex.net/v1/disk/resources/'
+    URL: str = 'https://cloud-api.yandex.net/v1/disk/resources/'
 
     def __init__(self, token, folder_path) -> None:
         """
@@ -47,7 +47,7 @@ class YandexDisk(DiskAbstract):
         :param folder_path: папка на YandexDisk
         """
         super().__init__(token, folder_path)
-        self.headers = {
+        self.headers: dict[str, str] = {
             'Accept': 'application/json',
             'Authorization': 'OAuth ' + self.token
         }
