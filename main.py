@@ -1,13 +1,14 @@
-import logging
 import time
 from os import listdir, path
 
-from requests.exceptions import ConnectionError
+from loguru import logger
+from requests.exceptions import ConnectionError, ReadTimeout
 
 from config import TOKEN, LOCAL_DIR, YANDEX_DIR, TIME_WATCH, LOG_PATH
 from disk_utils import YandexDisk
 
-logger: logging.Logger = logging.getLogger(__name__)
+
+logger.add(LOG_PATH, format="{time} {level} {message}", level="INFO")
 
 
 def get_local_files(local_dir: str) -> dict:
@@ -17,15 +18,11 @@ def get_local_files(local_dir: str) -> dict:
     :return: словарь с названиями файлов и времени их изменения
     """
     file_storage: dict = {}
-    try:
-        for file_name in listdir(local_dir):
-            if file_name not in file_storage.keys():
-                file_storage[file_name] = path.getmtime(local_dir + '/' + file_name)
+    for file_name in listdir(local_dir):
+        if file_name not in file_storage.keys():
+            file_storage[file_name] = path.getmtime(local_dir + '/' + file_name)
 
-        return file_storage
-    except FileNotFoundError:
-        print(f"Папки {local_dir} не существует")
-        return {}
+    return file_storage
 
 
 def upload_files(local_dir: str, files: set, ydisk: YandexDisk) -> None:
@@ -39,7 +36,7 @@ def upload_files(local_dir: str, files: set, ydisk: YandexDisk) -> None:
         try:
             ydisk.load(f'{local_dir}/{file}')
             logger.info(f"Файл {file} успешно записан")
-        except ConnectionError:
+        except (ConnectionError, ReadTimeout):
             logger.error(f"Файл {file} не записан. Ошибка соединения")
 
 
@@ -56,7 +53,7 @@ def update_files(file_storage: dict, updated_storage: dict, ydisk: YandexDisk) -
             try:
                 ydisk.reload(f'{LOCAL_DIR}/{file}')
                 logger.info(f'Файл {file} успешно перезаписан')
-            except ConnectionError:
+            except (ConnectionError, ReadTimeout):
                 logger.error(f"Файл {file} не перезаписан. Ошибка соединения")
 
 
@@ -70,11 +67,11 @@ def add_new_files(local_dir: str, file_storage: dict, new_files: set, ydisk: Yan
     :return: обновленный словарь с файлами локальной папки
     """
     for file in new_files:
-        file_storage[file] = path.getmtime(local_dir + '/' + file)
         try:
             ydisk.load(f'{local_dir}/{file}')
+            file_storage[file] = path.getmtime(local_dir + '/' + file)
             logger.info(f"Файл {file} успешно записан")
-        except ConnectionError:
+        except (ConnectionError, ReadTimeout):
             logger.error(f"Файл {file} не записан. Ошибка соединения")
 
     return file_storage
@@ -89,9 +86,12 @@ def delete_files(files_for_delete: set, file_storage: dict, ydisk: YandexDisk) -
     :return: обновленный словарь с файлами локальной папки
     """
     for file in files_for_delete:
-        ydisk.delete(file)
-        logger.info(f'Файл {file} удален')
-        file_storage.pop(file)
+        try:
+            ydisk.delete(file)
+            logger.info(f'Файл {file} удален')
+            file_storage.pop(file)
+        except (ConnectionError, ReadTimeout):
+            logger.error(f"Файл {file} не удален. Ошибка соединения")
 
     return file_storage
 
@@ -118,10 +118,5 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    logging.basicConfig(
-        filename=f'{LOG_PATH}',
-        level=logging.INFO,
-        format="%(name)s %(asctime)s %(levelname)s %(message)s",
-    )
     main()
 

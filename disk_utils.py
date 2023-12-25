@@ -1,15 +1,12 @@
-import logging
 from abc import ABC, abstractmethod
+
 from requests import Session, Response
+from loguru import logger
 
 from config import LOG_PATH
 
-logger: logging.Logger = logging.getLogger(__name__)
-logging.basicConfig(
-        filename=f'{LOG_PATH}',
-        level=logging.INFO,
-        format="%(name)s %(asctime)s %(levelname)s %(message)s",
-    )
+
+logger.add(LOG_PATH, format="{time} {level} {message}", level="INFO")
 
 
 class DiskAbstract(ABC):
@@ -61,6 +58,7 @@ class YandexDisk(DiskAbstract):
         response_href: Response = self.session.get(
             self.URL + f'upload?path={self.folder_path}/{path.split("/")[-1]}',
             headers=self.headers,
+            timeout=15,
         )
         if response_href.status_code != 200:
             logger.error(response_href.json()['message'])
@@ -94,6 +92,7 @@ class YandexDisk(DiskAbstract):
         response: Response = self.session.delete(
             self.URL + f'?path={self.folder_path}/{filename}',
             headers=self.headers,
+            timeout=15,
         )
         if response.status_code != 204:
             logger.error(response.json()['message'])
@@ -104,7 +103,11 @@ class YandexDisk(DiskAbstract):
         :return: список файлов
         """
         files_ydisk: list = []
-        response: Response = self.session.get(self.URL, headers=self.headers)
+        response: Response = self.session.get(
+            self.URL,
+            headers=self.headers,
+            timeout=15,
+        )
         if response.status_code != 200:
             logger.error(response.json()['message'])
 
