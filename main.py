@@ -40,7 +40,7 @@ def upload_files(local_dir: str, files: set, ydisk: YandexDisk) -> None:
             logger.error(f"Файл {file} не записан. Ошибка соединения")
 
 
-def update_files(file_storage: dict, updated_storage: dict, ydisk: YandexDisk) -> None:
+def update_files(file_storage: dict, updated_storage: dict, ydisk: YandexDisk) -> dict:
     """
     Функция для обновления файлов на Yandex Disk
     :param file_storage: словарь файлов в локальном хранилище
@@ -53,8 +53,12 @@ def update_files(file_storage: dict, updated_storage: dict, ydisk: YandexDisk) -
             try:
                 ydisk.reload(f'{LOCAL_DIR}/{file}')
                 logger.info(f'Файл {file} успешно перезаписан')
+                return updated_storage
             except (ConnectionError, ReadTimeout):
                 logger.error(f"Файл {file} не перезаписан. Ошибка соединения")
+                return file_storage
+        else:
+            return file_storage
 
 
 def add_new_files(local_dir: str, file_storage: dict, new_files: set, ydisk: YandexDisk) -> dict:
@@ -106,13 +110,25 @@ def main() -> None:
         updated_storage: dict[str, float] = get_local_files(LOCAL_DIR)
         if len(updated_storage) > len(file_storage):
             new_files: set[str] = updated_storage.keys() - file_storage.keys()
-            file_storage: dict[str, float] = add_new_files(LOCAL_DIR, file_storage, new_files, ydisk)
+            file_storage: dict[str, float] = add_new_files(
+                LOCAL_DIR,
+                file_storage,
+                new_files,
+                ydisk,
+            )
         elif len(updated_storage) < len(file_storage):
             files_for_delete: set[str] = file_storage.keys() - updated_storage.keys()
-            file_storage: dict[str, float] = delete_files(files_for_delete, file_storage, ydisk)
+            file_storage: dict[str, float] = delete_files(
+                files_for_delete,
+                file_storage,
+                ydisk,
+            )
         else:
-            update_files(file_storage, updated_storage, ydisk)
-            file_storage: dict[str, float] = updated_storage
+            file_storage: dict[str, float] = update_files(
+                file_storage,
+                updated_storage,
+                ydisk,
+            )
 
         time.sleep(float(TIME_WATCH))
 
